@@ -1,2 +1,4 @@
 
 /* Your CSS Code here. */
+.progress { display: flex; height: 8px; background: #ccc; cursor: pointer; flex: 10; flex-basis: 100%; }
+.progress__filled { width: 50%; background: #ffc600; flex: 0; flex-basis: 0%; }

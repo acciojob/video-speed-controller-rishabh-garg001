@@ -77,9 +77,10 @@
 
   // Progress bar
   function handleProgress() {
-    const percent = (video.currentTime / video.duration) * 100;
-    progressBar.style.width = percent + "%";
-  }
+  if (!video.duration) return;   // duration load na hui ho to NaN na aaye
+  const percent = (video.currentTime / video.duration) * 100;
+  progressBar.style.flexBasis = percent + "%";
+}
 
   // Progress bar par click karke jump
   function scrub(e) {
@@ -108,7 +109,11 @@
   skipButtons.forEach(btn => btn.addEventListener("click", skip));
   ranges.forEach(range => range.addEventListener("change", handleRangeUpdate));
   ranges.forEach(range => range.addEventListener("input", handleRangeUpdate));
-  progress.addEventListener("click", scrub);
+ let mousedown = false;
+progress.addEventListener("click", scrub);
+progress.addEventListener("mousemove", (e) => mousedown && scrub(e));
+progress.addEventListener("mousedown", () => (mousedown = true));
+progress.addEventListener("mouseup", () => (mousedown = false));
   speed.addEventListener("mousemove", handleMove);
 </script>
 </body>
