@@ -4,16 +4,11 @@
   <meta charset="UTF-8">
   <title>Video Speed Scrubber</title>
   <link rel="stylesheet" href="styles.css">
-  <style>
-    .player { max-width: 765px; }
-    .progress { height: 8px; background: #ccc; cursor: pointer; }
-    .progress__filled { height: 100%; width: 0%; background: #ffc600; }
-  </style>
 </head>
 <body>
 
-  <div class="wrapper player">
-    <video class="flex player__video viewer" width="765" height="430" src="https://www.w3schools.com/html/mov_bbb.mp4"></video>
+  <div class="player">
+    <video class="player__video viewer" width="765" height="430" src="https://www.w3schools.com/html/mov_bbb.mp4"></video>
 
     <div class="player__controls">
       <div class="progress">
@@ -22,18 +17,11 @@
 
       <button class="player__button toggle" title="Toggle Play">►</button>
 
-      <label>Volume</label>
-      <input type="range" name="volume" class="player__slider volume" min="0" max="1" step="0.05" value="1">
-
-      <label>Speed</label>
-      <input type="range" name="playbackSpeed" class="player__slider playbackSpeed" min="0.5" max="2" step="0.1" value="1">
+      <input type="range" name="volume" class="player__slider" min="0" max="1" step="0.05" value="1">
+      <input type="range" name="playbackSpeed" class="player__slider" min="0.5" max="2" step="0.1" value="1">
 
       <button data-skip="-10" class="player__button">« 10s</button>
       <button data-skip="25" class="player__button">25s »</button>
-    </div>
-
-    <div class="speed">
-      <div class="speed-bar">1×</div>
     </div>
   </div>
 
@@ -44,60 +32,35 @@
   const toggle = document.querySelector(".toggle");
   const skipButtons = document.querySelectorAll("[data-skip]");
   const ranges = document.querySelectorAll(".player__slider");
-  const speed = document.querySelector(".speed");
-  const bar = document.querySelector(".speed-bar");
 
-  // Play / Pause
   function togglePlay() {
-    if (video.paused) {
-      video.play();
-    } else {
-      video.pause();
-    }
+    if (video.paused) video.play();
+    else video.pause();
   }
 
-  // Icon update
   function updateButton() {
     toggle.textContent = video.paused ? "►" : "❚ ❚";
   }
 
-  // « 10s aur 25s »
   function skip() {
     video.currentTime += parseFloat(this.dataset.skip);
   }
 
-  // Volume aur playback speed
   function handleRangeUpdate() {
     if (this.name === "volume") {
-      video.volume = this.value;
+      video.volume = parseFloat(this.value);
     } else if (this.name === "playbackSpeed") {
-      video.playbackRate = this.value;
+      video.playbackRate = parseFloat(this.value);
     }
   }
 
-  // Progress bar
   function handleProgress() {
-  if (!video.duration) return;   // duration load na hui ho to NaN na aaye
-  const percent = (video.currentTime / video.duration) * 100;
-  progressBar.style.flexBasis = percent + "%";
-}
-
-  // Progress bar par click karke jump
-  function scrub(e) {
-    video.currentTime = (e.offsetX / progress.offsetWidth) * video.duration;
+    const percent = video.duration ? (video.currentTime / video.duration) * 100 : 0;
+    progressBar.style.width = percent + "%";
   }
 
-  // Speed bar (mouse move)
-  function handleMove(e) {
-    const y = e.pageY - this.offsetTop;
-    let percent = y / this.offsetHeight;
-    percent = Math.min(Math.max(percent, 0), 1);
-    const min = 0.4;
-    const max = 4;
-    const playbackRate = percent * (max - min) + min;
-    bar.style.height = Math.round(percent * 100) + "%";
-    bar.textContent = playbackRate.toFixed(2) + "×";
-    video.playbackRate = playbackRate;
+  function scrub(e) {
+    video.currentTime = (e.offsetX / progress.offsetWidth) * video.duration;
   }
 
   video.addEventListener("click", togglePlay);
@@ -109,12 +72,14 @@
   skipButtons.forEach(btn => btn.addEventListener("click", skip));
   ranges.forEach(range => range.addEventListener("change", handleRangeUpdate));
   ranges.forEach(range => range.addEventListener("input", handleRangeUpdate));
- let mousedown = false;
-progress.addEventListener("click", scrub);
-progress.addEventListener("mousemove", (e) => mousedown && scrub(e));
-progress.addEventListener("mousedown", () => (mousedown = true));
-progress.addEventListener("mouseup", () => (mousedown = false));
-  speed.addEventListener("mousemove", handleMove);
+
+  let mousedown = false;
+  progress.addEventListener("click", scrub);
+  progress.addEventListener("mousemove", e => mousedown && scrub(e));
+  progress.addEventListener("mousedown", () => (mousedown = true));
+  progress.addEventListener("mouseup", () => (mousedown = false));
+
+  handleProgress(); // shuru mein bar 0% par rahega
 </script>
 </body>
 </html>
