@@ -4,36 +4,111 @@
   <meta charset="UTF-8">
   <title>Video Speed Scrubber</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    .player { max-width: 765px; }
+    .progress { height: 8px; background: #ccc; cursor: pointer; }
+    .progress__filled { height: 100%; width: 0%; background: #ffc600; }
+  </style>
 </head>
 <body>
 
-  <div class="wrapper">
-    <video class="flex" width="765" height="430" src="http://clips.vorwaerts-gmbh.de/VfE_html5.mp4" controls></video>
+  <div class="wrapper player">
+    <video class="flex player__video viewer" width="765" height="430" src="https://www.w3schools.com/html/mov_bbb.mp4"></video>
+
+    <div class="player__controls">
+      <div class="progress">
+        <div class="progress__filled"></div>
+      </div>
+
+      <button class="player__button toggle" title="Toggle Play">►</button>
+
+      <label>Volume</label>
+      <input type="range" name="volume" class="player__slider volume" min="0" max="1" step="0.05" value="1">
+
+      <label>Speed</label>
+      <input type="range" name="playbackSpeed" class="player__slider playbackSpeed" min="0.5" max="2" step="0.1" value="1">
+
+      <button data-skip="-10" class="player__button">« 10s</button>
+      <button data-skip="25" class="player__button">25s »</button>
+    </div>
+
     <div class="speed">
       <div class="speed-bar">1×</div>
     </div>
   </div>
 
 <script>
+  const video = document.querySelector(".viewer");
+  const progress = document.querySelector(".progress");
+  const progressBar = document.querySelector(".progress__filled");
+  const toggle = document.querySelector(".toggle");
+  const skipButtons = document.querySelectorAll("[data-skip]");
+  const ranges = document.querySelectorAll(".player__slider");
   const speed = document.querySelector(".speed");
-  const bar = speed.querySelector(".speed-bar");
-  const video = document.querySelector(".flex");
+  const bar = document.querySelector(".speed-bar");
 
+  // Play / Pause
+  function togglePlay() {
+    if (video.paused) {
+      video.play();
+    } else {
+      video.pause();
+    }
+  }
+
+  // Icon update
+  function updateButton() {
+    toggle.textContent = video.paused ? "►" : "❚ ❚";
+  }
+
+  // « 10s aur 25s »
+  function skip() {
+    video.currentTime += parseFloat(this.dataset.skip);
+  }
+
+  // Volume aur playback speed
+  function handleRangeUpdate() {
+    if (this.name === "volume") {
+      video.volume = this.value;
+    } else if (this.name === "playbackSpeed") {
+      video.playbackRate = this.value;
+    }
+  }
+
+  // Progress bar
+  function handleProgress() {
+    const percent = (video.currentTime / video.duration) * 100;
+    progressBar.style.width = percent + "%";
+  }
+
+  // Progress bar par click karke jump
+  function scrub(e) {
+    video.currentTime = (e.offsetX / progress.offsetWidth) * video.duration;
+  }
+
+  // Speed bar (mouse move)
   function handleMove(e) {
     const y = e.pageY - this.offsetTop;
     let percent = y / this.offsetHeight;
     percent = Math.min(Math.max(percent, 0), 1);
-
     const min = 0.4;
     const max = 4;
-    const height = Math.round(percent * 100) + "%";
     const playbackRate = percent * (max - min) + min;
-
-    bar.style.height = height;
+    bar.style.height = Math.round(percent * 100) + "%";
     bar.textContent = playbackRate.toFixed(2) + "×";
     video.playbackRate = playbackRate;
   }
 
+  video.addEventListener("click", togglePlay);
+  video.addEventListener("play", updateButton);
+  video.addEventListener("pause", updateButton);
+  video.addEventListener("timeupdate", handleProgress);
+
+  toggle.addEventListener("click", togglePlay);
+  skipButtons.forEach(btn => btn.addEventListener("click", skip));
+  ranges.forEach(range => range.addEventListener("change", handleRangeUpdate));
+  ranges.forEach(range => range.addEventListener("input", handleRangeUpdate));
+  progress.addEventListener("click", scrub);
   speed.addEventListener("mousemove", handleMove);
 </script>
 </body>
